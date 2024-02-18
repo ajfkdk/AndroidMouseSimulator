@@ -26,13 +26,13 @@ public class BluetoothService {
 
     // 蓝牙适配器，用于管理蓝牙硬件
     private final BluetoothAdapter mBluetoothAdapter;
-
+//    TAG
+    private static final String TAG = "hello";
     // 广播接收者，用于监听找到新蓝牙设备的意图
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             // 获取动作（行为）字符串
             String action = intent.getAction();
-            Log.d("hello", "onReceive: " + action);
             // 如果发现了蓝牙设备
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // 从Intent获取蓝牙设备对象
@@ -46,7 +46,7 @@ public class BluetoothService {
                 // 确保设备不为空
                 assert device != null;
                 // 记录设备的名称和地址到日志
-                Log.d("hello", "onReceive: " + device.getName() + " " + device.getAddress());
+                Log.d("hello", "设备的名称和地址是: " + device.getName() + " " + device.getAddress());
             }
         }
     };
@@ -95,19 +95,21 @@ public class BluetoothService {
 
 
     // 开始蓝牙设备发现的方法
+// 开始蓝牙设备发现的方法
     public void startDiscovery() {
-        // 检查蓝牙扫描权限
-        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        // 检查蓝牙扫描权限和位置权限
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // 如果没有权限，则请求权限
-            ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.BLUETOOTH_SCAN}, REQUEST_BLUETOOTH_SCAN);
+            ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_BLUETOOTH_SCAN);
         } else {
             // 如果有权限，则开始蓝牙扫描并注册广播接收者以监听找到设备的广播
             mBluetoothAdapter.startDiscovery();
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             mContext.registerReceiver(mReceiver, filter);
+            Log.d(TAG, "开始扫描蓝牙设备");
         }
     }
-
     // 停止蓝牙设备发现的方法
     public void stopDiscovery() {
         // 检查蓝牙扫描权限
