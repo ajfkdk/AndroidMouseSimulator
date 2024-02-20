@@ -1,9 +1,12 @@
 package com.tencent.blue.blueTooth;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,108 +18,133 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.Set;
+
 // 创建一个BluetoothService类来管理蓝牙功能
 public class BluetoothService {
-    // 请求码，用于Intent回调
-    private static final int REQUEST_ENABLE_BT = 1;
-    private static final int REQUEST_BLUETOOTH_SCAN = 2; // 适用于蓝牙扫描的请求码
 
-    // 上下文，通常是调用服务的Activity
-    private final Context mContext;
+    private static final int PERMISSION_CODE = 100;
+    private Activity mActivity;
 
-    // 蓝牙适配器，用于管理蓝牙硬件
-    private final BluetoothAdapter mBluetoothAdapter;
-//    TAG
-    private static final String TAG = "hello";
-    // 广播接收者，用于监听找到新蓝牙设备的意图
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            // 获取动作（行为）字符串
-            String action = intent.getAction();
-            // 如果发现了蓝牙设备
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // 从Intent获取蓝牙设备对象
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+    public BluetoothService(Activity activity) {
+        mActivity = activity;
 
-                // 检查蓝牙连接权限
-                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    // 如果没有权限，则请求权限
-                    ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQUEST_ENABLE_BT);
-                }
-                // 确保设备不为空
-                assert device != null;
-                // 记录设备的名称和地址到日志
-                Log.d("hello", "设备的名称和地址是: " + device.getName() + " " + device.getAddress());
+    }
+
+    BluetoothHeadset bluetoothHeadset;
+
+    // Get the default adapter
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+    private BluetoothProfile.ServiceListener profileListener = new BluetoothProfile.ServiceListener() {
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            if (profile == BluetoothProfile.HEADSET) {
+                bluetoothHeadset = (BluetoothHeadset) proxy;
+            }
+        }
+
+        public void onServiceDisconnected(int profile) {
+            if (profile == BluetoothProfile.HEADSET) {
+                bluetoothHeadset = null;
             }
         }
     };
 
-    // 构造函数，初始化上下文和蓝牙适配器
-    public BluetoothService(Context context) {
-        mContext = context;
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    }
+    final String TAG = "BluetoothService";
 
-    // 设置蓝牙连接的方法
-    public void setupBluetoothConnection() {
-        // 如果设备不支持蓝牙，则记录错误并返回
-        if (mBluetoothAdapter == null) {
-            Log.e("hello", "Device doesn't support Bluetooth");
-            return;
+    public BluetoothAdapter getAdapter() {
+        if (ContextCompat.checkSelfPermission(mActivity,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    mActivity,
+                    new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                    PERMISSION_CODE);
         }
-
-        // 检查蓝牙连接权限
-        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            // 如果没有权限，则请求权限
-            ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQUEST_ENABLE_BT);
+        //申请蓝牙权限
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
+        }
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            // Device doesn't support Bluetooth
+            Toast.makeText(mActivity, "设备不支持蓝牙", Toast.LENGTH_SHORT).show();
         } else {
-            // 如果有权限，则启用蓝牙
-            enableBluetooth();
-        }
-    }
-
-    // 启用蓝牙的方法
-    public void enableBluetooth() {
-        // 如果蓝牙未开启
-        if (!mBluetoothAdapter.isEnabled()) {
-            // 创建一个请求启用蓝牙的Intent
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            // 检查权限并请求启用蓝牙
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                ((Activity) mContext).startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                mActivity.startActivityForResult(enableBtIntent, 1);
+            } else {
+                // Bluetooth is enabled
+                Toast.makeText(mActivity, "蓝牙已开启", Toast.LENGTH_SHORT).show();
             }
-        } else {
-            // 如果蓝牙已经开启，则显示Toast消息
-            Log.d("hello", "Bluetooth is already enabled");
         }
-        startDiscovery();
-
+        return bluetoothAdapter;
     }
 
+    //搜索蓝牙设备
+    public void discoverDevice(BluetoothAdapter bluetoothAdapter) {
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_SCAN}, 1);
+        }
+        if (bluetoothAdapter.isDiscovering()) {
+            bluetoothAdapter.cancelDiscovery();
+        }
 
-    // 开始蓝牙设备发现的方法
-// 开始蓝牙设备发现的方法
-    public void startDiscovery() {
-        // 检查蓝牙扫描权限和位置权限
-        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // 如果没有权限，则请求权限
-            ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_BLUETOOTH_SCAN);
-        } else {
-            // 如果有权限，则开始蓝牙扫描并注册广播接收者以监听找到设备的广播
-            mBluetoothAdapter.startDiscovery();
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            mContext.registerReceiver(mReceiver, filter);
-            Log.d(TAG, "开始扫描蓝牙设备");
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
+        }
+
+        //请求：BLUETOOTH_SCAN
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_SCAN}, 1);
+        }
+        Log.d(TAG, "start: " + "开始搜索");
+        bluetoothAdapter.startDiscovery();
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        mActivity.registerReceiver(receiver, filter);
+        //todo 记得在onDestroy中取消注册，不然很费电
+    }
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(mActivity, new String[]{android.Manifest.permission.BLUETOOTH_CONNECT}, 1);
+                }
+                String deviceName = device.getName();
+                String deviceHardwareAddress = device.getAddress(); // MAC address
+                Log.d(TAG, "start: " + deviceName + " " + deviceHardwareAddress);
+
+            }
+        }
+    };
+
+
+    //获取已配对的设备
+    public void getPaireDevice(BluetoothAdapter bluetoothAdapter){
+        @SuppressLint("MissingPermission") Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                @SuppressLint("MissingPermission") String deviceName = device.getName();
+                String deviceHardwareAddress = device.getAddress(); // MAC address
+                Log.d(TAG, "start: " + deviceName + " " + deviceHardwareAddress);
+            }
         }
     }
-    // 停止蓝牙设备发现的方法
-    public void stopDiscovery() {
-        // 检查蓝牙扫描权限
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
-            // 如果有权限，则取消蓝牙设备发现并注销广播接收者
-            mBluetoothAdapter.cancelDiscovery();
-            mContext.unregisterReceiver(mReceiver);
+
+    //使得设备可被发现
+    public void enableDiscoverable(BluetoothAdapter bluetoothAdapter){
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
+        }
+
+        if (bluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            mActivity.startActivity(discoverableIntent);
         }
     }
 }
