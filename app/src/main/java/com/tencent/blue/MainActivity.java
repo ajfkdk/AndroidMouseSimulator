@@ -9,8 +9,10 @@ import android.widget.TextView;
 
 import com.tencent.blue.blueTooth.AcceptThread;
 import com.tencent.blue.blueTooth.BluetoothService;
+import com.tencent.blue.blueTooth.HidDeviceDemo;
 
 public class MainActivity extends AppCompatActivity {
+    HidDeviceDemo hid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +27,12 @@ public class MainActivity extends AppCompatActivity {
 
         //获取debug按钮
         Button debug = findViewById(R.id.debug);
+
+        hid = new HidDeviceDemo();
+        hid.init(bs.getAdapter(), this);
         //设置按钮点击事件
         debug.setOnClickListener(v -> {
-            BluetoothAdapter adapter = bs.getAdapter();
-            bs.enableDiscoverable(adapter);
+           hid.SendKey();
         });
 
         Button Server = findViewById(R.id.server);
