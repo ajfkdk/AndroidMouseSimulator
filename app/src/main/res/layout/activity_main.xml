@@ -25,25 +25,25 @@
         >
         <!--    调试按钮，居中-->
         <Button
-            android:id="@+id/debug"
+            android:id="@+id/sendSingle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="连接"
+            android:text="单个字符"
             app:layout_constraintTop_toTopOf="parent" />
         <!--    服务端开启-->
         <Button
-            android:id="@+id/server"
+            android:id="@+id/sendCombination"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="服务端开启"
+            android:text="组合键"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
         <!--    客户端开启-->
         <Button
-            android:id="@+id/client"
+            android:id="@+id/sendString"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="客户端开启"
+            android:text="字符串"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
     </LinearLayout>
