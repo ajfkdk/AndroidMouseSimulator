@@ -93,6 +93,7 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
                     //发现设备了
                     mHidDevice = (BluetoothHidDevice) bluetoothProfile;
                     registerBluetoothHid();
+
                 }
 
             }

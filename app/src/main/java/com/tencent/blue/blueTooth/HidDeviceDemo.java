@@ -38,15 +38,19 @@ public class HidDeviceDemo {
         mBtAdapter.getProfileProxy(mActivity, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int i, BluetoothProfile bluetoothProfile) {
-                Log.d(TAG, "有设备连接");
+                Log.d(TAG, "有设备连接:" + i);
                 if (i == BluetoothProfile.HID_DEVICE) {
                     if (!(bluetoothProfile instanceof BluetoothHidDevice)) {
                         Log.e(TAG, "不是HID设备");
                         return;
                     }
-                    //发现设备了
+                    //发现设备
                     mHidDevice = (BluetoothHidDevice) bluetoothProfile;
                     registerBluetoothHid();
+                    if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_ADVERTISE}, 1);
+                    }
+                    mActivity.startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE), 1);
                 }
 
             }
