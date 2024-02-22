@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -32,18 +33,24 @@ public class MainActivity extends AppCompatActivity {
         hid.init(bs.getAdapter(), this);
         //设置按钮点击事件
         debug.setOnClickListener(v -> {
-           hid.SendKey();
+            Log.d("main", "onCreate: chenjunbin");
+            hid.sendKeys("chenjunbin");
         });
 
         Button Server = findViewById(R.id.server);
         AcceptThread acceptThread = new AcceptThread(bs.getAdapter(), this);
         Server.setOnClickListener(v -> {
-            acceptThread.start();
-
+            hid.test();
         });
 
 
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        hid.close();
     }
 
 
