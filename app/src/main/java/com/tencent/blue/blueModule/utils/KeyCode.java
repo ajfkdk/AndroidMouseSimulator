@@ -2,14 +2,14 @@ package com.tencent.blue.blueModule.utils;
 
 public class KeyCode {
     // Keyboard Modifiers
-    public static final int MODIFIER_LEFT_CTRL = 0x01;
-    public static final int MODIFIER_LEFT_SHIFT = 0x02;
-    public static final int MODIFIER_LEFT_ALT = 0x04;
-    public static final int MODIFIER_LEFT_GUI = 0x08;
-    public static final int MODIFIER_RIGHT_CTRL = 0x10;
-    public static final int MODIFIER_RIGHT_SHIFT = 0x20;
-    public static final int MODIFIER_RIGHT_ALT = 0x40;
-    public static final int MODIFIER_RIGHT_GUI = 0x80;
+    public static final int MODIFIER_LEFT_CTRL      = 0b00000001;
+    public static final int MODIFIER_LEFT_SHIFT     = 0b00000010;
+    public static final int MODIFIER_LEFT_ALT       = 0b00000100;
+    public static final int MODIFIER_LEFT_GUI       = 0b00001000;
+    public static final int MODIFIER_RIGHT_CTRL     = 0b00010000;
+    public static final int MODIFIER_RIGHT_SHIFT    = 0b00100000;
+    public static final int MODIFIER_RIGHT_ALT      = 0b01000000;
+    public static final int MODIFIER_RIGHT_GUI      = 0b10000000;
 
     // Keys
     public static final int KEY_A = 0x04;

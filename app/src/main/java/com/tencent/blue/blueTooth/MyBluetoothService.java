@@ -100,7 +100,7 @@ public class MyBluetoothService {
             try {
                 mmSocket.close();
             } catch (IOException e) {
-                Log.e(TAG, "Could not close the connect socket", e);
+                Log.e(TAG, "Could not close the waitToConnect socket", e);
             }
         }
     }

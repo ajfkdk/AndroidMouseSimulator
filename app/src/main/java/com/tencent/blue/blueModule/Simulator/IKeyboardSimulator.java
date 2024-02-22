@@ -5,7 +5,7 @@ package com.tencent.blue.blueModule.Simulator;
 * */
 public interface IKeyboardSimulator {
     void pressKey(int keyCode);
-    void releaseKey(int keyCode);
+    void releaseKey();
     void sendCombination(int[] keyCodes);
     void sendText(String text);
 }

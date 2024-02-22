@@ -52,7 +52,7 @@ public class ConnectThread extends Thread {
         try {
             mmSocket.connect();
         } catch (IOException connectException) {
-            // Unable to connect; close the socket and return.
+            // Unable to waitToConnect; close the socket and return.
             try {
                 mmSocket.close();
             } catch (IOException closeException) {

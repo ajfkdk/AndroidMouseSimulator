@@ -38,19 +38,15 @@ public class HidDeviceDemo {
         mBtAdapter.getProfileProxy(mActivity, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int i, BluetoothProfile bluetoothProfile) {
-                Log.d(TAG, "onServiceConnected:" + i);
+                Log.d(TAG, "有设备连接");
                 if (i == BluetoothProfile.HID_DEVICE) {
                     if (!(bluetoothProfile instanceof BluetoothHidDevice)) {
-                        Log.e(TAG, "Proxy received but it's not BluetoothHidDevice");
+                        Log.e(TAG, "不是HID设备");
                         return;
                     }
+                    //发现设备了
                     mHidDevice = (BluetoothHidDevice) bluetoothProfile;
                     registerBluetoothHid();
-                    //启动设备发现
-                    if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_ADVERTISE}, 1);
-                    }
-                    mActivity.startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE), 1);
                 }
 
             }
@@ -75,12 +71,14 @@ public class HidDeviceDemo {
                 if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
                 }
-                Log.d(TAG, "onAppStatusChanged:" + (pluggedDevice != null ? pluggedDevice.getName() : "null") + " registered:" + registered);
-                if (registered) {
 
+                Log.d(TAG, "连接状态发送变化:" + (pluggedDevice != null ? pluggedDevice.getName() : "null") + " registered:" + registered);
+
+                if (registered) {
+                    //表示注册成功
                     List<BluetoothDevice> matchingDevices = mHidDevice.getDevicesMatchingConnectionStates(new int[]{BluetoothProfile.STATE_CONNECTED});
 
-                    Log.d(TAG, "paired devices: " + matchingDevices + "  " + mHidDevice.getConnectionState(pluggedDevice));
+                    Log.d(TAG, "已经匹配上的设备 : " + matchingDevices + "  " + mHidDevice.getConnectionState(pluggedDevice));
                     if (pluggedDevice != null && mHidDevice.getConnectionState(pluggedDevice) != BluetoothProfile.STATE_CONNECTED) {
                         boolean result = mHidDevice.connect(pluggedDevice);
                         Log.d(TAG, "hidDevice connect:" + result);
@@ -94,7 +92,7 @@ public class HidDeviceDemo {
 
             @Override
             public void onConnectionStateChanged(BluetoothDevice device, int state) {
-                Log.d(TAG, "onConnectionStateChanged:" + device + "  state:" + state);
+                Log.d(TAG, "连接状态发生变化:" + device + "  state:" + state);
                 if (state == BluetoothProfile.STATE_CONNECTED) {
                     mHostDevice = device;
                 }
