@@ -42,32 +42,43 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
     private BluetoothDevice mHostDevice;
 
     private BluetoothAdapter getAdapter() {
+        // 检查是否有后台位置权限
         if (ContextCompat.checkSelfPermission(mActivity,
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
+            // 如果没有权限，申请后台位置权限
             ActivityCompat.requestPermissions(
                     mActivity,
                     new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
                     PERMISSION_CODE);
         }
-        //申请蓝牙权限
+
+        // 检查是否有蓝牙连接权限
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // 如果没有权限，申请蓝牙连接权限
             ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
         }
+
+        // 获取默认的蓝牙适配器
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // 检查设备是否支持蓝牙
         if (bluetoothAdapter == null) {
-            // Device doesn't support Bluetooth
+            // 设备不支持蓝牙，显示提示信息
             Toast.makeText(mActivity, "设备不支持蓝牙", Toast.LENGTH_SHORT).show();
         } else {
+            // 检查蓝牙是否已开启
             if (!bluetoothAdapter.isEnabled()) {
-                //蓝牙未开启
+                // 蓝牙未开启，发起请求以启用蓝牙
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 mActivity.startActivityForResult(enableBtIntent, 1);
             } else {
-                // Bluetooth is enabled
+                // 蓝牙已开启，显示提示信息
                 Toast.makeText(mActivity, "蓝牙已开启", Toast.LENGTH_SHORT).show();
             }
         }
+
+        // 返回蓝牙适配器对象
         return bluetoothAdapter;
     }
 
@@ -79,34 +90,33 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
 
 
     public void init() {
-
-
+        // 获取蓝牙HID设备的代理
         mBluetoothAdapter.getProfileProxy(mActivity, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int i, BluetoothProfile bluetoothProfile) {
+                // 当有设备连接时调用
                 Log.d(TAG, "有设备连接");
+
+                // 检查设备类型是否为HID设备
                 if (i == BluetoothProfile.HID_DEVICE) {
+                    // 检查bluetoothProfile是否为BluetoothHidDevice的实例
                     if (!(bluetoothProfile instanceof BluetoothHidDevice)) {
                         Log.e(TAG, "不是HID设备");
                         return;
                     }
-                    //发现设备了
+                    // 发现HID设备
                     mHidDevice = (BluetoothHidDevice) bluetoothProfile;
-                    registerBluetoothHid();
-
+                    registerBluetoothHid(); // 注册HID设备
                 }
-
             }
 
             @Override
             public void onServiceDisconnected(int i) {
+                // 当服务断开连接时调用
                 Log.d(TAG, "onServiceDisconnected:" + i);
-
             }
         }, BluetoothProfile.HID_DEVICE);
-
     }
-
     private void registerBluetoothHid() {
 
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -130,9 +140,11 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
                         boolean result = mHidDevice.connect(pluggedDevice);
                         Log.d(TAG, "hidDevice connect:" + result);
                     } else if (matchingDevices != null && matchingDevices.size() > 0) {
-                        Toast.makeText(mActivity, "没有设备当前连接，但存在已配对的设备（matchingDevices列表不为空）", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(mActivity, "没有设备当前连接，但存在已配对的设备（matchingDevices列表不为空）", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onAppStatusChanged: 没有设备当前连接，但存在已配对的设备（matchingDevices列表不为空）");
                     } else {
-                        Toast.makeText(mActivity, "没有已配对或已连接的设备", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(mActivity, "没有已配对或已连接的设备", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onAppStatusChanged: 没有已配对或已连接的设备");
                     }
                 }
             }
@@ -187,6 +199,10 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
                 ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
             }
             mHidDevice.sendReport(mHostDevice, 4, data);
+            Log.d(TAG, "sendData: ");
+
+        }else{
+            Toast.makeText(mActivity, "设备未连接", Toast.LENGTH_SHORT).show();
         }
     }
 }
