@@ -1,7 +1,5 @@
 package com.tencent.blue.blueModule.manager.impl;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -21,14 +19,14 @@ import com.tencent.blue.blueModule.manager.IBluetoothConnectionManager;
 import com.tencent.blue.blueTooth.HidConfig;
 
 import java.util.List;
-import java.util.concurrent.Executors;
 
 public class BluetoothConnectionManager implements IBluetoothConnectionManager {
     private Activity mActivity;
 
     private static final int PERMISSION_CODE = 100;
 
-    private BluetoothHidDevice mHidDevice;
+    private BluetoothHidDevice service;
+    private BluetoothDevice mHostDevice;
 
     private static final String TAG = "Connect Manager:";
 
@@ -38,11 +36,16 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
             HidConfig.MOUSE_NAME,
             HidConfig.DESCRIPTION,
             HidConfig.PROVIDER,
-            BluetoothHidDevice.SUBCLASS1_COMBO,
+            BluetoothHidDevice.SUBCLASS1_MOUSE,
             HidConfig.MOUSE_COMBO);
 
-    private BluetoothDevice mHostDevice;
 
+    public BluetoothHidDevice getService() {
+        return service;
+    }
+    public BluetoothDevice getHostDevice() {
+        return mHostDevice;
+    }
     private BluetoothAdapter getAdapter() {
         // 检查是否有后台位置权限
         if (ContextCompat.checkSelfPermission(mActivity,
@@ -95,15 +98,9 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
 
     private void makeDeviceDiscoverable() {
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300); // 可被发现的时间（秒）
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 120); // 可被发现的时间（秒）
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            mActivity.startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE_BT);
             return;
         }
         mActivity.startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE_BT);
@@ -140,7 +137,7 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
                         Log.d(TAG, "onServiceConnected: 是HID设备");
                     }
                     // 发现HID设备
-                    mHidDevice = (BluetoothHidDevice) bluetoothProfile;
+                    service = (BluetoothHidDevice) bluetoothProfile;
                     registerBluetoothHid(); // 注册HID设备
                 }else{
                     Log.d(TAG, "onServiceConnected: HID设备未连接");
@@ -163,32 +160,26 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
         Log.d(TAG, "registerBluetoothHid: 进来了");
 
         // 注册HID设备
-        boolean result=mHidDevice.registerApp(sdpSettings, null, null, Executors.newCachedThreadPool(), new BluetoothHidDevice.Callback() {
+        boolean result= service.registerApp(sdpSettings, null, null, mActivity.getMainExecutor(), new BluetoothHidDevice.Callback() {
             @Override
             public void onAppStatusChanged(BluetoothDevice pluggedDevice, boolean registered) {
-                Log.d(TAG, "onAppStatusChanged: 注册状态发生变化");
                 // 检查是否具有蓝牙连接权限
                 if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                     // 如果没有权限，申请蓝牙连接权限
                     ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
                 }
+                Log.d(TAG, "onAppStatusChanged: 注册状态发生变化");
+
 
                 // 打印连接状态变化的日志
                 Log.d(TAG, "连接状态发送变化:" + (pluggedDevice != null ? pluggedDevice.getName() : "null") + " registered:" + registered);
 
                 if (registered) {
-                    // 注册成功
-                    List<BluetoothDevice> matchingDevices = mHidDevice.getDevicesMatchingConnectionStates(new int[]{BluetoothProfile.STATE_CONNECTED});
 
-                    // 打印已匹配上的设备信息
-                    Log.d(TAG, "已经匹配上的设备 : " + matchingDevices + "  " + mHidDevice.getConnectionState(pluggedDevice));
-                    Log.d(TAG, "onAppStatusChanged: mHidDevice.getConnectionState(pluggedDevice)：" + mHidDevice.getConnectionState(pluggedDevice));
+                    mHostDevice = pluggedDevice;
+                    service.connect(pluggedDevice);
 
-                    // 如果有已插入的设备且设备未连接，则尝试连接
-                    if (pluggedDevice != null && mHidDevice.getConnectionState(pluggedDevice) != BluetoothProfile.STATE_CONNECTED) {
-                        boolean result = mHidDevice.connect(pluggedDevice);
-                        Log.d(TAG, "hidDevice 成功连接！！:" + result);
-                    }
+
                 }
                 if (!registered) {
                     // 注册失败
@@ -198,18 +189,20 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
 
             @Override
             public void onConnectionStateChanged(BluetoothDevice device, int state) {
-                // 打印连接状态变化的日志
-                Log.d(TAG, "连接状态发生变化:" + device + "  state:" + state);
 
-                // 根据状态更新主机设备信息
-                if (state == BluetoothProfile.STATE_CONNECTED) {
-                    mHostDevice = device;
-                }
-                if (state == BluetoothProfile.STATE_DISCONNECTED) {
-                    mHostDevice = null;
-                } else if (state == BluetoothProfile.STATE_CONNECTING) {
-                    // 正在连接
-                    Log.d(TAG, "onConnectionStateChanged: 正在连接");
+                switch (state) {
+                    case BluetoothHidDevice.STATE_CONNECTED:
+
+                        Log.d(TAG, "HID Host connected!");
+                        break;
+
+                    case BluetoothHidDevice.STATE_DISCONNECTED:
+
+                        Log.d(TAG, "HID Host disconnected!");
+                        break;
+
+                    default:
+                        super.onConnectionStateChanged(device, state);
                 }
             }
 
@@ -235,7 +228,7 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
             if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
             }
-            mHidDevice.disconnect(mHostDevice);
+            service.disconnect(mHostDevice);
             Toast.makeText(mActivity, "连接已断开", Toast.LENGTH_SHORT).show();
         }
     }
@@ -245,8 +238,11 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
         }
-        List<BluetoothDevice> devicesMatchingConnectionStates = mHidDevice.getDevicesMatchingConnectionStates(new int[]{BluetoothProfile.STATE_CONNECTED});
-        return devicesMatchingConnectionStates != null && devicesMatchingConnectionStates.size() > 0;
+        if (mHostDevice != null) {
+            return service.getConnectionState(mHostDevice) == BluetoothHidDevice.STATE_CONNECTED;
+        }else {
+            return false;
+        }
     }
 
     @Override
@@ -255,7 +251,7 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
             if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
             }
-            mHidDevice.sendReport(mHostDevice, 4, data);
+            service.sendReport(mHostDevice, 4, data);
             Log.d(TAG, "sendData: ");
 
         }else{

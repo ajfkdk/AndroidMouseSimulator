@@ -10,14 +10,15 @@ import com.tencent.blue.blueModule.Simulator.IKeyboardSimulator;
 import com.tencent.blue.blueModule.Simulator.impl.KeyboardSimulator;
 import com.tencent.blue.blueModule.manager.IBluetoothConnectionManager;
 import com.tencent.blue.blueModule.manager.impl.BluetoothConnectionManager;
+import com.tencent.blue.blueModule.manager.impl.BluetoothHidMouse;
 import com.tencent.blue.blueModule.utils.KeyCode;
 
 public class MainActivity extends AppCompatActivity {
     // 创建蓝牙连接管理器
-    IBluetoothConnectionManager connectionManager;
+    BluetoothConnectionManager connectionManager;
 
     // 创建键盘模拟器，注入连接管理器
-    IKeyboardSimulator keyboard;
+    BluetoothHidMouse mouse;
 
 
     @Override
@@ -27,8 +28,9 @@ public class MainActivity extends AppCompatActivity {
 
         // 初始化蓝牙连接管理器
         connectionManager = new BluetoothConnectionManager(this);
+
         // 初始化键盘模拟器
-        keyboard = new KeyboardSimulator(connectionManager);
+        mouse = new BluetoothHidMouse(connectionManager.getService(), connectionManager.getHostDevice());
 
         // 连接设备
         connectionManager.waitToConnect();
@@ -39,8 +41,9 @@ public class MainActivity extends AppCompatActivity {
 
             // 如果设备已连接，发送按键
             if (connectionManager.isConnected()) {
-                keyboard.pressKey(KeyCode.KEY_A); // 按下A键
-                keyboard.releaseKey(); // 释放
+                //x左滑20
+                mouse.senMouse((byte) 0x14, (byte) 0x00);
+
             }else{
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
@@ -50,9 +53,7 @@ public class MainActivity extends AppCompatActivity {
         Button sendCombination = findViewById(R.id.sendCombination);
         sendCombination.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                int[] keyCodes = new int[]{KeyCode.MODIFIER_LEFT_CTRL, KeyCode.KEY_A};
-                keyboard.sendCombination(keyCodes);
-                keyboard.releaseKey();
+                mouse.sendLeftClick(true);
             }else{
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
@@ -61,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
         Button sendText = findViewById(R.id.sendString);
         sendText.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                keyboard.sendText("with his song!");
+//                y下滑20
+                mouse.senMouse((byte) 0x00, (byte) 0x14);
             }else{
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }

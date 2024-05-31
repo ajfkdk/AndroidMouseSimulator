@@ -28,14 +28,14 @@
             android:id="@+id/sendSingle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="单个字符"
+            android:text="左滑"
             app:layout_constraintTop_toTopOf="parent" />
         <!--    服务端开启-->
         <Button
             android:id="@+id/sendCombination"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="组合键"
+            android:text="单击"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
         <!--    客户端开启-->
@@ -43,7 +43,7 @@
             android:id="@+id/sendString"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="字符串"
+            android:text="下滑"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
     </LinearLayout>
