@@ -1,5 +1,7 @@
 package com.tencent.blue.blueModule.manager.impl;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -33,11 +35,11 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
     private BluetoothAdapter mBluetoothAdapter;
 
     private final BluetoothHidDeviceAppSdpSettings sdpSettings = new BluetoothHidDeviceAppSdpSettings(
-            HidConfig.NAME,
+            HidConfig.MOUSE_NAME,
             HidConfig.DESCRIPTION,
             HidConfig.PROVIDER,
             BluetoothHidDevice.SUBCLASS1_COMBO,
-            HidConfig.KEYBOARD_COMBO);
+            HidConfig.MOUSE_COMBO);
 
     private BluetoothDevice mHostDevice;
 
@@ -88,25 +90,60 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
 
     }
 
+    private static final int REQUEST_ENABLE_BT = 1;
+    private static final int REQUEST_DISCOVERABLE_BT = 2;
+
+    private void makeDeviceDiscoverable() {
+        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300); // 可被发现的时间（秒）
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mActivity.startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE_BT);
+    }
 
     public void init() {
+
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            // 请求用户启用蓝牙
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            mActivity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        } else {
+            // 使设备可被发现
+            makeDeviceDiscoverable();
+        }
         // 获取蓝牙HID设备的代理
         mBluetoothAdapter.getProfileProxy(mActivity, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int i, BluetoothProfile bluetoothProfile) {
                 // 当有设备连接时调用
-                Log.d(TAG, "有设备连接");
 
                 // 检查设备类型是否为HID设备
                 if (i == BluetoothProfile.HID_DEVICE) {
+                    Log.d(TAG, "onServiceConnected: HID设备已连接");
                     // 检查bluetoothProfile是否为BluetoothHidDevice的实例
                     if (!(bluetoothProfile instanceof BluetoothHidDevice)) {
                         Log.e(TAG, "不是HID设备");
                         return;
+                    }else{
+                        Log.d(TAG, "onServiceConnected: 是HID设备");
                     }
                     // 发现HID设备
                     mHidDevice = (BluetoothHidDevice) bluetoothProfile;
                     registerBluetoothHid(); // 注册HID设备
+                }else{
+                    Log.d(TAG, "onServiceConnected: HID设备未连接");
                 }
             }
 
@@ -118,52 +155,72 @@ public class BluetoothConnectionManager implements IBluetoothConnectionManager {
         }, BluetoothProfile.HID_DEVICE);
     }
     private void registerBluetoothHid() {
-
+        // 检查是否具有蓝牙连接权限
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // 如果没有权限，申请蓝牙连接权限
             ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
         }
-        mHidDevice.registerApp(sdpSettings, null, null, Executors.newCachedThreadPool(), new BluetoothHidDevice.Callback() {
+        Log.d(TAG, "registerBluetoothHid: 进来了");
+
+        // 注册HID设备
+        boolean result=mHidDevice.registerApp(sdpSettings, null, null, Executors.newCachedThreadPool(), new BluetoothHidDevice.Callback() {
             @Override
             public void onAppStatusChanged(BluetoothDevice pluggedDevice, boolean registered) {
+                Log.d(TAG, "onAppStatusChanged: 注册状态发生变化");
+                // 检查是否具有蓝牙连接权限
                 if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    // 如果没有权限，申请蓝牙连接权限
                     ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
                 }
 
+                // 打印连接状态变化的日志
                 Log.d(TAG, "连接状态发送变化:" + (pluggedDevice != null ? pluggedDevice.getName() : "null") + " registered:" + registered);
 
                 if (registered) {
-                    //表示注册成功
+                    // 注册成功
                     List<BluetoothDevice> matchingDevices = mHidDevice.getDevicesMatchingConnectionStates(new int[]{BluetoothProfile.STATE_CONNECTED});
 
+                    // 打印已匹配上的设备信息
                     Log.d(TAG, "已经匹配上的设备 : " + matchingDevices + "  " + mHidDevice.getConnectionState(pluggedDevice));
+                    Log.d(TAG, "onAppStatusChanged: mHidDevice.getConnectionState(pluggedDevice)：" + mHidDevice.getConnectionState(pluggedDevice));
+
+                    // 如果有已插入的设备且设备未连接，则尝试连接
                     if (pluggedDevice != null && mHidDevice.getConnectionState(pluggedDevice) != BluetoothProfile.STATE_CONNECTED) {
                         boolean result = mHidDevice.connect(pluggedDevice);
-                        Log.d(TAG, "hidDevice connect:" + result);
-                    } else if (matchingDevices != null && matchingDevices.size() > 0) {
-//                        Toast.makeText(mActivity, "没有设备当前连接，但存在已配对的设备（matchingDevices列表不为空）", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "onAppStatusChanged: 没有设备当前连接，但存在已配对的设备（matchingDevices列表不为空）");
-                    } else {
-//                        Toast.makeText(mActivity, "没有已配对或已连接的设备", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "onAppStatusChanged: 没有已配对或已连接的设备");
+                        Log.d(TAG, "hidDevice 成功连接！！:" + result);
                     }
+                }
+                if (!registered) {
+                    // 注册失败
+                    Log.d(TAG, "注册失败");
                 }
             }
 
             @Override
             public void onConnectionStateChanged(BluetoothDevice device, int state) {
+                // 打印连接状态变化的日志
                 Log.d(TAG, "连接状态发生变化:" + device + "  state:" + state);
+
+                // 根据状态更新主机设备信息
                 if (state == BluetoothProfile.STATE_CONNECTED) {
                     mHostDevice = device;
                 }
                 if (state == BluetoothProfile.STATE_DISCONNECTED) {
                     mHostDevice = null;
                 } else if (state == BluetoothProfile.STATE_CONNECTING) {
-                    //TODO 正在连接
+                    // 正在连接
                     Log.d(TAG, "onConnectionStateChanged: 正在连接");
                 }
             }
+
+
         });
 
+        if (result) {
+            Log.d(TAG, "registerBluetoothHid: 注册成功");
+        } else {
+            Log.d(TAG, "registerBluetoothHid: 注册失败");
+        }
     }
 
 

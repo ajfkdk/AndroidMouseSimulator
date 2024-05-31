@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
         // 连接设备
         connectionManager.waitToConnect();
+
+
         Button sendSingle = findViewById(R.id.sendSingle);
         sendSingle.setOnClickListener(v -> {
 
