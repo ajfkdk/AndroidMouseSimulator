@@ -6,7 +6,9 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHidDevice;
 import android.bluetooth.BluetoothHidDeviceAppSdpSettings;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
@@ -64,10 +66,12 @@ public class NewBlueConnectManager {
                     new String[]{Manifest.permission.BLUETOOTH_CONNECT},
                     PERMISSION_CODE_BLUETOOTH_CONNECT);
         }
-
-        // 获取默认的蓝牙适配器
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
+        BluetoothAdapter bluetoothAdapter = null;
+        //BluetoothAdapter bluetoothAdapter 获取默认的蓝牙适配器
+        BluetoothManager bluetoothManage = (BluetoothManager) mActivity.getSystemService(Context.BLUETOOTH_SERVICE);
+        if (bluetoothManage != null) {
+            bluetoothAdapter = bluetoothManage.getAdapter();
+        }
         // 检查设备是否支持蓝牙
         if (bluetoothAdapter == null) {
             Toast.makeText(mActivity, "设备不支持蓝牙", Toast.LENGTH_SHORT).show();
@@ -105,13 +109,19 @@ public class NewBlueConnectManager {
         }
 
         // 获取蓝牙HID设备的代理
-        bluetoothAdapter.getProfileProxy(mActivity, new BluetoothProfile.ServiceListener() {
+        boolean profileProxy = bluetoothAdapter.getProfileProxy(mActivity, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
                 //和蓝牙配置文件服务建立连接
                 Log.d(TAG, "onServiceConnected: 和蓝牙配置文件服务建立连接");
-                // 得到了一个模拟出来的蓝牙HID设备
-                myHidDevice = (BluetoothHidDevice) proxy;
+                if (profile == BluetoothProfile.HID_DEVICE) {
+                    // 得到了一个模拟出来的蓝牙HID设备
+                    myHidDevice = (BluetoothHidDevice) proxy;
+                    // 注册蓝牙HID设备
+                    registerBluetoothHid();
+                }else {
+                    Log.d(TAG, "onServiceConnected: 未知的蓝牙配置文件, profile: " + profile);
+                }
             }
 
             @Override
@@ -119,6 +129,11 @@ public class NewBlueConnectManager {
                 Log.d(TAG, "onServiceDisconnected: 和蓝牙配置文件服务断开连接");
             }
         }, BluetoothProfile.HID_DEVICE);
+
+        if (!profileProxy) {
+            Log.d(TAG, "init: 蓝牙HID设备代理获取失败");
+            return;
+        }
 
     }
 
@@ -132,6 +147,35 @@ public class NewBlueConnectManager {
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             mActivity.requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, PERMISSION_CODE);
         }
+
+        if (remoteComputer == null) {
+            Log.d(TAG, "activeConnect: 设备未找到");
+            return;
+        }else{
+            Log.d(TAG, "activeConnect: 设备已找到");
+            Log.d(TAG, "activeConnect: 设备名称: " + remoteComputer.getName());
+        }
+
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        boolean isPaired = false;
+        for (BluetoothDevice device : pairedDevices) {
+            Log.d(TAG, "activeConnect----------------");
+            Log.d(TAG, "activeConnect name: " + device.getName());
+            Log.d(TAG, "activeConnect: address: " + device.getAddress());
+            Log.d(TAG, "activeConnect: address: " + address);
+            Log.d(TAG, "activeConnect----------------");
+
+            if (device.getAddress().equals(address)) {
+                isPaired = true;
+                break;
+            }
+        }
+        if (!isPaired) {
+            Log.d(TAG, "activeConnect: 设备未配对");
+            return;
+        }
+
+        Log.d(TAG, "activeConnect: bluetoothAdapter.isEnabled() " + bluetoothAdapter.isEnabled());
         boolean connect = myHidDevice.connect(remoteComputer);
         if (connect) {
             Log.d(TAG, "activeConnect: 连接成功");
@@ -215,7 +259,7 @@ public class NewBlueConnectManager {
 
     public void showPaired() {
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-           mActivity.requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, PERMISSION_CODE);
+            mActivity.requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, PERMISSION_CODE);
         }
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
@@ -233,4 +277,6 @@ public class NewBlueConnectManager {
             Log.d(TAG, "showPaired: 没有已配对设备");
         }
     }
+
+
 }

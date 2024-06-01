@@ -19,12 +19,28 @@ public class BluetoothHidMouse {
     }
 
     public void sendLeftClick(boolean click) {
+        if (myHidDevice == null) {
+            Log.e(TAG, "sendMouse failed,  hid device is null!");
+            return;
+        }
+        if (remoteComputer == null) {
+            Log.e(TAG, "sendMouse failed,  hid device is not connected!");
+            return;
+        }
         mLeftClick = click;
         sendMouse((byte) 0x00, (byte) 0x00);
     }
     private static final String TAG = "Connect Manager:";
 
     public void sendRightClick(boolean click) {
+        if (myHidDevice == null) {
+            Log.e(TAG, "sendMouse failed,  hid device is null!");
+            return;
+        }
+        if (remoteComputer == null) {
+            Log.e(TAG, "sendMouse failed,  hid device is not connected!");
+            return;
+        }
         mRightClick = click;
         sendMouse((byte) 0x00, (byte) 0x00);
     }
