@@ -5,13 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
-
-import com.tencent.blue.blueModule.Simulator.IKeyboardSimulator;
-import com.tencent.blue.blueModule.Simulator.impl.KeyboardSimulator;
-import com.tencent.blue.blueModule.manager.IBluetoothConnectionManager;
 import com.tencent.blue.blueModule.manager.impl.BluetoothConnectionManager;
 import com.tencent.blue.blueModule.manager.impl.BluetoothHidMouse;
-import com.tencent.blue.blueModule.utils.KeyCode;
 
 public class MainActivity extends AppCompatActivity {
     // 创建蓝牙连接管理器
@@ -30,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         connectionManager = new BluetoothConnectionManager(this);
 
         // 初始化键盘模拟器
-        mouse = new BluetoothHidMouse(connectionManager.getService(), connectionManager.getHostDevice());
+
 
         // 连接设备
         connectionManager.waitToConnect();
@@ -38,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button sendSingle = findViewById(R.id.sendSingle);
         sendSingle.setOnClickListener(v -> {
-
+            mouse = new BluetoothHidMouse(connectionManager.getService(), connectionManager.getHostDevice());
             // 如果设备已连接，发送按键
             if (connectionManager.isConnected()) {
                 //x左滑20
@@ -62,8 +57,11 @@ public class MainActivity extends AppCompatActivity {
         Button sendText = findViewById(R.id.sendString);
         sendText.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-//                y下滑20
-                mouse.senMouse((byte) 0x00, (byte) 0x14);
+//                y下滑2，循环30次
+                for (int i = 0; i < 50; i++) {
+                    mouse.senMouse((byte) 0x00, (byte) 0x02);
+                }
+//                mouse.senMouse((byte) 0x00, (byte) 0x14);
             }else{
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
