@@ -2,11 +2,13 @@ package com.tencent.blue;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-import com.tencent.blue.blueModule.manager.impl.BluetoothConnectionManager;
-import com.tencent.blue.blueModule.manager.impl.BluetoothHidMouse;
+import com.tencent.blue.manager.BluetoothConnectionManager;
+import com.tencent.blue.manager.BluetoothHidMouse;
 
 public class MainActivity extends AppCompatActivity {
     // 创建蓝牙连接管理器
@@ -24,12 +26,12 @@ public class MainActivity extends AppCompatActivity {
         // 初始化蓝牙连接管理器
         connectionManager = new BluetoothConnectionManager(this);
 
-        // 初始化键盘模拟器
 
 
         // 连接设备
         connectionManager.waitToConnect();
 
+//        -- 连接区域 --
 
         Button sendSingle = findViewById(R.id.sendSingle);
         sendSingle.setOnClickListener(v -> {
@@ -66,6 +68,21 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        Button openSettingsButton = findViewById(R.id.openSettings);
+        openSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+
+
+
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.tencent.blue.blueModule.manager.impl;
+package com.tencent.blue.manager;
 
 import static androidx.core.content.ContextCompat.registerReceiver;
 

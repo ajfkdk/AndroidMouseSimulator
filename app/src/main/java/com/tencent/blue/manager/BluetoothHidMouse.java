@@ -1,4 +1,4 @@
-package com.tencent.blue.blueModule.manager.impl;
+package com.tencent.blue.manager;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;

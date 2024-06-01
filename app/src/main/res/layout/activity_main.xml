@@ -8,7 +8,6 @@
 
     <TextView
         android:id="@+id/info"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
@@ -16,21 +15,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        >
-        <!--    调试按钮，居中-->
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 调试按钮，居中 -->
         <Button
             android:id="@+id/sendSingle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="左滑"
             app:layout_constraintTop_toTopOf="parent" />
-        <!--    服务端开启-->
+
+        <!-- 服务端开启 -->
         <Button
             android:id="@+id/sendCombination"
             android:layout_width="wrap_content"
@@ -38,7 +39,8 @@
             android:text="单击"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-        <!--    客户端开启-->
+
+        <!-- 客户端开启 -->
         <Button
             android:id="@+id/sendString"
             android:layout_width="wrap_content"
@@ -46,6 +48,13 @@
             android:text="下滑"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
-    </LinearLayout>
 
+        <!-- 打开设置界面的按钮 -->
+        <Button
+            android:id="@+id/openSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            app:layout_constraintTop_toTopOf="parent" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
