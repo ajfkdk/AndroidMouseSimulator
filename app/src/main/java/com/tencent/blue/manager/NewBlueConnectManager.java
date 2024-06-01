@@ -34,11 +34,12 @@ public class NewBlueConnectManager {
 
     private BluetoothDevice remoteComputer;
 
+    public BluetoothHidMouse mouse = null;
+
     private static final int PERMISSION_CODE = 100;
     private static final int PERMISSION_CODE_BACKGROUND_LOCATION = 1001;
     private static final int PERMISSION_CODE_BLUETOOTH_CONNECT = 1002;
     private static final int REQUEST_ENABLE_BT = 1003;
-
     private static final int REQUEST_DISCOVERABLE_BT = 1004;
 
     private final BluetoothHidDeviceAppSdpSettings sdpSettings = new BluetoothHidDeviceAppSdpSettings(
@@ -119,7 +120,7 @@ public class NewBlueConnectManager {
                     myHidDevice = (BluetoothHidDevice) proxy;
                     // 注册蓝牙HID设备
                     registerBluetoothHid();
-                }else {
+                } else {
                     Log.d(TAG, "onServiceConnected: 未知的蓝牙配置文件, profile: " + profile);
                 }
             }
@@ -151,7 +152,7 @@ public class NewBlueConnectManager {
         if (remoteComputer == null) {
             Log.d(TAG, "activeConnect: 设备未找到");
             return;
-        }else{
+        } else {
             Log.d(TAG, "activeConnect: 设备已找到");
             Log.d(TAG, "activeConnect: 设备名称: " + remoteComputer.getName());
         }
@@ -228,11 +229,12 @@ public class NewBlueConnectManager {
                         break;
                     case BluetoothProfile.STATE_CONNECTED:
                         Log.d(TAG, "设备已连接: " + device.getName());
-                        HostDevice hostDevice = new HostDevice(device.getName(), device.getAddress(), System.currentTimeMillis());
+                        HostDevice hostDevice = new HostDevice(device.getAddress(), device.getName(), System.currentTimeMillis());
                         devices.addDevice(hostDevice);
-                        //mActivity强转为MainActivity，调用MainActivity的updateBluetoothStatus方法
                         ((MainActivity) mActivity).updateBluetoothStatus();
                         remoteComputer = device;
+                        mouse = new BluetoothHidMouse(myHidDevice, remoteComputer);
+                        Toast.makeText(mActivity, "设备已连接", Toast.LENGTH_SHORT).show();
                         break;
                     case BluetoothProfile.STATE_DISCONNECTING:
                         Log.d(TAG, "设备正在断开连接: " + device.getName());
@@ -245,16 +247,10 @@ public class NewBlueConnectManager {
 
     }
 
-    public BluetoothHidDevice getMyHidDevice() {
-        return myHidDevice;
-    }
 
-    public BluetoothDevice getRemoteComputer() {
-        return remoteComputer;
-    }
 
     public boolean isConnected() {
-        return remoteComputer != null;
+        return mouse != null;
     }
 
     public void showPaired() {

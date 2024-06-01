@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     NewBlueConnectManager connectionManager;
 
     // 创建键盘模拟器，注入连接管理器
-    BluetoothHidMouse mouse;
 
     // 设备列表适配器
     DeviceListAdapter deviceListAdapter;
@@ -60,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         Button slipLeft = findViewById(R.id.slipLeft);
         slipLeft.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                mouse.sendMouse((byte) 0x14, (byte) 0x00);
+                connectionManager.mouse.sendMouse((byte) 0x14, (byte) 0x00);
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
@@ -69,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         Button simpleChick = findViewById(R.id.simpleChick);
         simpleChick.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                mouse.sendLeftClick(true);
+                connectionManager.mouse.sendLeftClick(true);
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
@@ -79,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         slipDown.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
                 for (int i = 0; i < 50; i++) {
-                    mouse.sendMouse((byte) 0x00, (byte) 0x02);
+                    connectionManager.mouse.sendMouse((byte) 0x00, (byte) 0x02);
                 }
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button activeBlue = findViewById(R.id.activeBlue);
         activeBlue.setOnClickListener(v -> {
-            mouse = new BluetoothHidMouse(connectionManager.getMyHidDevice(), connectionManager.getRemoteComputer());
+
         });
 
         Button passitiveScan = findViewById(R.id.passitiveScan);

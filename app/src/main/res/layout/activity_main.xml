@@ -71,5 +71,19 @@
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:text="扫描" />
+<!--        接收服务的功能     -->
+        <Button
+            android:id="@+id/startService"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="开服" />
+
+        <Button
+            android:id="@+id/stopService"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="停服" />
     </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

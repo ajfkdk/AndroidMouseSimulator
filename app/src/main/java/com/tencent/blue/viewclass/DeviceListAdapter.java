@@ -29,9 +29,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.De
 
     public void connectToDevice(int position) {
         HostDevice device = devices.get(position);
-        Log.d(TAG, "connectToDevice address: " + device.getAddress());
-        Log.d(TAG, "connectToDevice name: " + device.getName());
-        blueConnectManager.activeConnect(device.getName());
+        blueConnectManager.activeConnect(device.getAddress());
     }
 
     static class DeviceViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

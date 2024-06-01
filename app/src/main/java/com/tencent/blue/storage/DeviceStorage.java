@@ -46,6 +46,15 @@ public class DeviceStorage {
     public void save() {
         // 按照设备最后连接时间逆序排序
         devices.sort((o1, o2) -> -Long.compare(o1.getLastConnected(), o2.getLastConnected()));
+        //把Address相同的设备去重
+        for (int i = 0; i < devices.size(); i++) {
+            for (int j = i + 1; j < devices.size(); j++) {
+                if (devices.get(i).getAddress().equals(devices.get(j).getAddress())) {
+                    devices.remove(j);
+                    j--;
+                }
+            }
+        }
         // 使用Gson库将设备列表转换为字符串
         String src = new Gson().toJson(devices);
         // 将设备列表字符串存储到共享偏好设置中
