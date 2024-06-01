@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     // 创建蓝牙连接管理器
     NewBlueConnectManager connectionManager;
 
-    // 创建键盘模拟器，注入连接管理器
+    private UdpServer udpServer;
 
     // 设备列表适配器
     DeviceListAdapter deviceListAdapter;
@@ -53,6 +53,12 @@ public class MainActivity extends AppCompatActivity {
 
         // 按钮事件处理
         setupButtonListeners();
+
+        // 启动UDP服务器
+        udpServer = new UdpServer();
+        udpServer.start(connectionManager);
+
+
     }
 
     private void setupButtonListeners() {

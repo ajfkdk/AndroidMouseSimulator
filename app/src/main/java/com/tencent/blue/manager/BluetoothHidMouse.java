@@ -62,7 +62,7 @@ public class BluetoothHidMouse {
         bytes[0] = (byte) (bytes[0] | (mRightClick ? 1 : 0) << 1);
         bytes[1] = dx;
         bytes[2] = dy;
-        Log.d(TAG, "sendMouse   Left:" + mLeftClick+ ",Right:" + mRightClick );
+        Log.d(TAG, "sendMouse dx:" + dx + ",dy：" + dy);
         myHidDevice.sendReport(remoteComputer, 4, bytes);
     }
 
