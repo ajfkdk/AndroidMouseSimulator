@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.tencent.blue.manager.BluetoothConnectionManager;
 import com.tencent.blue.manager.BluetoothHidMouse;
+import com.tencent.blue.manager.NewBlueConnectManager;
 import com.tencent.blue.storage.DeviceStorage;
 import com.tencent.blue.storage.HostDevice;
 import com.tencent.blue.viewclass.DeviceListAdapter;
@@ -24,7 +25,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     // 创建蓝牙连接管理器
-    BluetoothConnectionManager connectionManager;
+    NewBlueConnectManager connectionManager;
 
     // 创建键盘模拟器，注入连接管理器
     BluetoothHidMouse mouse;
@@ -38,17 +39,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // 初始化蓝牙连接管理器
-        connectionManager = new BluetoothConnectionManager(this);
-
+        connectionManager = new NewBlueConnectManager(this, new DeviceStorage(this));
         // 连接设备
-        connectionManager.waitToConnect();
+        connectionManager.init();
+
 
         // 初始化RecyclerView和适配器
         RecyclerView deviceListRecyclerView = findViewById(R.id.device_list_recycler_view);
         deviceListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        deviceListAdapter = new DeviceListAdapter(new ArrayList<>());
+        deviceListAdapter = new DeviceListAdapter(new ArrayList<>(), connectionManager);
         deviceListRecyclerView.setAdapter(deviceListAdapter);
-
         // 读取存储的设备数据并更新RecyclerView
         updateDeviceList();
 
@@ -57,18 +57,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupButtonListeners() {
-        Button sendSingle = findViewById(R.id.sendSingle);
-        sendSingle.setOnClickListener(v -> {
-            mouse = new BluetoothHidMouse(connectionManager.getService(), connectionManager.getHostDevice());
+        Button slipLeft = findViewById(R.id.slipLeft);
+        slipLeft.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                mouse.senMouse((byte) 0x14, (byte) 0x00);
+                mouse.sendMouse((byte) 0x14, (byte) 0x00);
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
         });
 
-        Button sendCombination = findViewById(R.id.sendCombination);
-        sendCombination.setOnClickListener(v -> {
+        Button simpleChick = findViewById(R.id.simpleChick);
+        simpleChick.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
                 mouse.sendLeftClick(true);
             } else {
@@ -76,27 +75,37 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button sendText = findViewById(R.id.sendString);
-        sendText.setOnClickListener(v -> {
+        Button slipDown = findViewById(R.id.slipDown);
+        slipDown.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
                 for (int i = 0; i < 50; i++) {
-                    mouse.senMouse((byte) 0x00, (byte) 0x02);
+                    mouse.sendMouse((byte) 0x00, (byte) 0x02);
                 }
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
         });
 
-        Button openSettingsButton = findViewById(R.id.openSettings);
-        openSettingsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivity(intent);
+        Button showPaired = findViewById(R.id.showPaired);
+        showPaired.setOnClickListener(v -> {
+           connectionManager.showPaired();
+        });
+
+        Button activeBlue = findViewById(R.id.activeBlue);
+        activeBlue.setOnClickListener(v -> {
+            mouse = new BluetoothHidMouse(connectionManager.getMyHidDevice(), connectionManager.getRemoteComputer());
+        });
+
+        Button passitiveScan = findViewById(R.id.passitiveScan);
+        passitiveScan.setOnClickListener(v -> {
+            connectionManager.passiveScan();
         });
     }
 
     private void updateDeviceList() {
         String src = PreferenceManager.getDefaultSharedPreferences(this).getString(DeviceStorage.DEVICES_KEY, "[]");
-        List<HostDevice> devices = new Gson().fromJson(src, new TypeToken<ArrayList<HostDevice>>() {}.getType());
+        List<HostDevice> devices = new Gson().fromJson(src, new TypeToken<ArrayList<HostDevice>>() {
+        }.getType());
         deviceListAdapter.updateDevices(devices);
     }
 
@@ -104,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Toast.makeText(this, "断开连接", Toast.LENGTH_SHORT).show();
-        connectionManager.disconnect();
+//        connectionManager.disconnect();
     }
 
     public void updateBluetoothStatus() {

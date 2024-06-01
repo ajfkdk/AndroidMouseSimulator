@@ -9,34 +9,34 @@ public class BluetoothHidMouse {
     private boolean mLeftClick;
     private boolean mRightClick;
 
-    private final BluetoothHidDevice service;
+    private final BluetoothHidDevice myHidDevice;
 
-    private final BluetoothDevice mHostDevice;
+    private final BluetoothDevice remoteComputer;
 
     public  BluetoothHidMouse(BluetoothHidDevice service, BluetoothDevice hostDevice) {
-        this.service = service;
-        this.mHostDevice = hostDevice;
+        this.myHidDevice = service;
+        this.remoteComputer = hostDevice;
     }
 
     public void sendLeftClick(boolean click) {
         mLeftClick = click;
-        senMouse((byte) 0x00, (byte) 0x00);
+        sendMouse((byte) 0x00, (byte) 0x00);
     }
     private static final String TAG = "Connect Manager:";
 
     public void sendRightClick(boolean click) {
         mRightClick = click;
-        senMouse((byte) 0x00, (byte) 0x00);
+        sendMouse((byte) 0x00, (byte) 0x00);
     }
 
     @SuppressLint("MissingPermission")
-    public void senMouse(byte dx, byte dy) {
-        if (service == null) {
-            Log.e(TAG, "senMouse failed,  hid device is null!");
+    public void sendMouse(byte dx, byte dy) {
+        if (myHidDevice == null) {
+            Log.e(TAG, "sendMouse failed,  hid device is null!");
             return;
         }
-        if (mHostDevice == null) {
-            Log.e(TAG, "senMouse failed,  hid device is not connected!");
+        if (remoteComputer == null) {
+            Log.e(TAG, "sendMouse failed,  hid device is not connected!");
             return;
         }
 
@@ -46,17 +46,17 @@ public class BluetoothHidMouse {
         bytes[0] = (byte) (bytes[0] | (mRightClick ? 1 : 0) << 1);
         bytes[1] = dx;
         bytes[2] = dy;
-        Log.d(TAG, "senMouse   Left:" + mLeftClick+ ",Right:" + mRightClick );
-        service.sendReport(mHostDevice, 4, bytes);
+        Log.d(TAG, "sendMouse   Left:" + mLeftClick+ ",Right:" + mRightClick );
+        myHidDevice.sendReport(remoteComputer, 4, bytes);
     }
 
     @SuppressLint("MissingPermission")
     public void sendWheel(byte hWheel, byte vWheel) {
-        if (service == null) {
+        if (myHidDevice == null) {
             Log.e(TAG, "sendWheel failed,  hid device is null!");
             return;
         }
-        if (mHostDevice == null) {
+        if (remoteComputer == null) {
             Log.e(TAG, "sendWheel failed,  hid device is not connected!");
             return;
         }
@@ -65,7 +65,7 @@ public class BluetoothHidMouse {
         bytes[3] = vWheel; //垂直滚轮
         bytes[4] = hWheel; //水平滚轮
         Log.d(TAG, "sendWheel vWheel:" + vWheel + ",hWheel：" + hWheel);
-        service.sendReport(mHostDevice, 4, bytes);
+        myHidDevice.sendReport(remoteComputer, 4, bytes);
     }
 
 }

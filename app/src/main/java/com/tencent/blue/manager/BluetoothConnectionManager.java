@@ -257,9 +257,6 @@ public class BluetoothConnectionManager {
     }
 
 
-    public void waitToConnect() {
-        init();
-    }
 
     public void disconnect() {
         if (mHostDevice != null) {
@@ -282,16 +279,12 @@ public class BluetoothConnectionManager {
         }
     }
 
-    public void sendData(byte[] data) {
-        if (mHostDevice != null) {
-            if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
-            }
-            service.sendReport(mHostDevice, 4, data);
-            Log.d(TAG, "sendData: ");
-
-        } else {
-            Toast.makeText(mActivity, "设备未连接", Toast.LENGTH_SHORT).show();
+    public void connect(HostDevice device) {
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
         }
+        mHostDevice = mBluetoothAdapter.getRemoteDevice(device.getAddress());
+        service.connect(mHostDevice);
     }
+
 }

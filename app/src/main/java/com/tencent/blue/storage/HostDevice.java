@@ -26,6 +26,12 @@ public class HostDevice {
         this.lastConnected = -1; // 将上次连接时间初始化为-1，表示从未连接过
     }
 
+    public HostDevice(String address, String name, long lastConnected) {
+        this.address = address;  // 初始化设备地址
+        this.name = name;        // 初始化设备名称
+        this.lastConnected = lastConnected; // 将上次连接时间初始化为-1，表示从未连接过
+    }
+
     /**
      * 设置设备的上次连接时间。
      *

@@ -19,42 +19,57 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:listitem="@layout/device_list_item" />
 
-    <LinearLayout
+    <GridLayout
         android:id="@+id/button_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
+        android:rowCount="2"
+        android:columnCount="4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <Button
-            android:id="@+id/sendSingle"
+            android:id="@+id/slipLeft"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:text="左滑" />
 
         <Button
-            android:id="@+id/sendCombination"
+            android:id="@+id/simpleChick"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:text="单击" />
 
         <Button
-            android:id="@+id/sendString"
+            android:id="@+id/slipDown"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:text="下滑" />
 
         <Button
-            android:id="@+id/openSettings"
+            android:id="@+id/showPaired"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Settings" />
-    </LinearLayout>
+            android:layout_columnWeight="1"
+            android:text="已配对" />
+
+        <Button
+            android:id="@+id/activeBlue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="激活" />
+
+        <Button
+            android:id="@+id/passitiveScan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="扫描" />
+    </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

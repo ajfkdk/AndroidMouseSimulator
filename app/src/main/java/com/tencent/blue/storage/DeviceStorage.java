@@ -1,5 +1,6 @@
 package com.tencent.blue.storage;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
 import androidx.preference.PreferenceManager;
@@ -137,5 +138,9 @@ public class DeviceStorage {
      */
     public boolean hasDevice(String address) {
         return getDevice(address) != null;  // 如果能通过MAC地址找到设备，则返回true，否则返回false
+    }
+
+    public BluetoothDevice getStoredHostDevice() {
+        return null;
     }
 }
