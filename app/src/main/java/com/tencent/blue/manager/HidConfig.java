@@ -1,4 +1,4 @@
-package com.tencent.blue.blueTooth;
+package com.tencent.blue.manager;
 public class HidConfig {
     public final static String MOUSE_NAME = "VV Mouse";
 

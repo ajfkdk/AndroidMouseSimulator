@@ -20,7 +20,9 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.tencent.blue.blueTooth.HidConfig;
+import com.tencent.blue.MainActivity;
+import com.tencent.blue.storage.DeviceStorage;
+import com.tencent.blue.storage.HostDevice;
 
 public class BluetoothConnectionManager {
     private Activity mActivity;
@@ -29,6 +31,8 @@ public class BluetoothConnectionManager {
 
     private BluetoothHidDevice service;
     private BluetoothDevice mHostDevice;
+
+    private DeviceStorage devices;
 
     private static final String TAG = "Connect Manager:";
 
@@ -94,6 +98,8 @@ public class BluetoothConnectionManager {
     public BluetoothConnectionManager(Activity activity) {
         this.mActivity = activity;
         mBluetoothAdapter = getAdapter();
+        devices = new DeviceStorage(activity);
+
 
     }
 
@@ -112,9 +118,14 @@ public class BluetoothConnectionManager {
 
     public void init() {
 
+
+
+
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             mActivity.requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN}, 1);
         }
+
+
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -128,7 +139,6 @@ public class BluetoothConnectionManager {
                     // 处理设备 (例如：保存到列表，显示给用户)
                     Log.d(TAG, "onReceive: " + device.getName() + " : " + device.getAddress());
                     if (device.getName() != null ) {
-                        mHostDevice = device;
                         Log.d(TAG, "onReceive: " + device.getName() + " : " + device.getAddress());
                         mBluetoothAdapter.cancelDiscovery();
                         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -225,8 +235,10 @@ public class BluetoothConnectionManager {
                         break;
                     case BluetoothProfile.STATE_CONNECTED:
                         Log.d(TAG, "设备已连接: " + device.getName());
-                        mHostDevice = device;
-                        service.connect(device);
+                        HostDevice hostDevice = new HostDevice(device.getName(), device.getAddress());
+                        devices.addDevice(hostDevice);
+                        //mActivity强转为MainActivity，调用MainActivity的updateBluetoothStatus方法
+                        ((MainActivity) mActivity).updateBluetoothStatus();
                         break;
                     case BluetoothProfile.STATE_DISCONNECTING:
                         Log.d(TAG, "设备正在断开连接: " + device.getName());
