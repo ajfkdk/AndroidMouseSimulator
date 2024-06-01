@@ -1,4 +1,4 @@
-package com.tencent.blue;
+package com.tencent.blue.viewclass;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.tencent.blue.R;
 import com.tencent.blue.storage.HostDevice;
 
 import java.util.List;

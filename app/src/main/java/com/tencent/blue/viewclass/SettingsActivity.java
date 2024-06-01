@@ -1,4 +1,4 @@
-package com.tencent.blue;
+package com.tencent.blue.viewclass;
 
 import android.os.Bundle;
 

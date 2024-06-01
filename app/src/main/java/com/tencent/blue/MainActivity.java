@@ -7,9 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -18,6 +16,8 @@ import com.tencent.blue.manager.BluetoothConnectionManager;
 import com.tencent.blue.manager.BluetoothHidMouse;
 import com.tencent.blue.storage.DeviceStorage;
 import com.tencent.blue.storage.HostDevice;
+import com.tencent.blue.viewclass.DeviceListAdapter;
+import com.tencent.blue.viewclass.SettingsActivity;
 
 import java.util.ArrayList;
 import java.util.List;

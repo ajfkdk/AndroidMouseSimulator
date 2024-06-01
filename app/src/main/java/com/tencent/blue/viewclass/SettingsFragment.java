@@ -1,8 +1,10 @@
-package com.tencent.blue;
+package com.tencent.blue.viewclass;
 
 import android.os.Bundle;
 
 import androidx.preference.PreferenceFragmentCompat;
+
+import com.tencent.blue.R;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
