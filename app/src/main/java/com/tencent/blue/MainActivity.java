@@ -9,7 +9,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -34,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
     // 设备列表适配器
     DeviceListAdapter deviceListAdapter;
 
-    // 图片适配器
-    private ImageAdapter imageAdapter;
+    // 添加用于显示视频流的 ImageView
+    private ImageView videoStreamView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,16 +50,20 @@ public class MainActivity extends AppCompatActivity {
         connectionManager.init();
 
 
+        // 初始化 ImageView
+        videoStreamView = findViewById(R.id.video_stream_view);
         // 初始化RecyclerView和适配器
-        RecyclerView imageRecyclerView = findViewById(R.id.device_list_recycler_view);
-        imageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        imageAdapter = new ImageAdapter();
-        imageRecyclerView.setAdapter(imageAdapter);
 
+        // 启动UDP服务器
         // 启动UDP服务器
         udpServer = new UdpServer();
         udpServer.setImageReceiver(imageData -> runOnUiThread(() -> {
-            imageAdapter.addImageData(imageData);
+            // 显示接收到的图像数据
+            if (imageData != null) {
+                videoStreamView.setImageBitmap(imageData);
+            } else {
+                Log.e("MainActivity", "Failed to decode image data.");
+            }
         }));
         udpServer.start(connectionManager);
 

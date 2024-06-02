@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
-    private List<byte[]> imageDataList = new ArrayList<>();
+    private List<Bitmap> imageDataList = new ArrayList<>();
 
     @NonNull
     @Override
@@ -22,9 +22,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-        byte[] imageData = imageDataList.get(position);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
-        holder.imageView.setImageBitmap(bitmap);
+        Bitmap imageData = imageDataList.get(position);
+
+        holder.imageView.setImageBitmap(imageData);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         return imageDataList.size();
     }
 
-    public void addImageData(byte[] imageData) {
+    public void addImageData(Bitmap imageData) {
         imageDataList.add(imageData);
         notifyItemInserted(imageDataList.size() - 1);
     }

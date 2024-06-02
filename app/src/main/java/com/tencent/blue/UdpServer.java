@@ -1,5 +1,7 @@
 package com.tencent.blue;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -34,7 +36,13 @@ public class UdpServer {
 
     private ImageReceiver imageReceiver;
 
-    private static final int BUFFER_SIZE = 65535; // 设置缓冲区大小，最大为 UDP 数据包的大小
+    private static final int BUFFER_SIZE = 1400; // 每个数据块的大小
+
+    private static final int HEADER_SIZE = 5; // 消息头大小（1字节的消息类型 + 2字节的块索引 + 2字节的总块数）
+
+    private byte[][] imageChunks;
+    private int totalChunks;
+    private int receivedChunks;
 
     public UdpServer() {
         this.executorService = Executors.newSingleThreadExecutor();
@@ -87,11 +95,37 @@ public class UdpServer {
                     Log.d(TAG, "onMessageReceived: Move Mouse x=" + x + ", y=" + y);
                     moveTo(x, y);
                     break;
-                case 0x02: // 其他类型的消息处理
-                    Log.d(TAG, "onMessageReceived: Image data received");
-                    byte[] imageData = new byte[message.length - 1];
-                    System.arraycopy(message, 1, imageData, 0, imageData.length);
-                    onImageReceived(imageData);
+                case 0x02: // 图像数据
+                    int chunkIndex = byteBuffer.getShort(); // 当前数据块的索引
+                    int totalChunks = byteBuffer.getShort(); // 总数据块数量
+                    byte[] imageData = new byte[message.length - HEADER_SIZE];
+                    byteBuffer.get(imageData); // 读取图像数据
+
+                    // 初始化数据缓冲区
+                    if (imageChunks == null || this.totalChunks != totalChunks) {
+                        this.totalChunks = totalChunks;
+                        this.receivedChunks = 0;
+                        this.imageChunks = new byte[totalChunks][];
+                    }
+
+                    // 存储当前数据块
+                    if (imageChunks[chunkIndex] == null) {
+                        imageChunks[chunkIndex] = imageData;
+                        receivedChunks++;
+                    }
+
+                    // 检查是否接收完所有数据块
+                    if (receivedChunks == totalChunks) {
+                        byte[] completeImageData = new byte[totalChunks * (BUFFER_SIZE - HEADER_SIZE)];
+                        int offset = 0;
+                        for (byte[] chunk : imageChunks) {
+                            System.arraycopy(chunk, 0, completeImageData, offset, chunk.length);
+                            offset += chunk.length;
+                        }
+                        onImageReceived(completeImageData); // 调用处理完整图像数据的方法
+                        receivedChunks = 0; // 重置计数器
+                        imageChunks = null; // 清空数据缓冲区
+                    }
                     break;
                 default:
                     Log.e(TAG, "Unknown message type: " + messageType);
@@ -142,7 +176,14 @@ public class UdpServer {
     private void onImageReceived(byte[] imageData) {
         // 将图像数据传递给UI线程进行显示
         if (imageReceiver != null) {
-            imageReceiver.onImageReceived(imageData);
+            // 尝试转换字节数组为 Bitmap
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+            if (bitmap != null) {
+                Log.d(TAG, "onImageReceived: Bitmap successfully decoded.");
+                imageReceiver.onImageReceived(bitmap);
+            } else {
+                Log.e(TAG, "onImageReceived: Failed to decode byte array to bitmap.");
+            }
         }
     }
 
