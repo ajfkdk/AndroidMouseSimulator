@@ -93,14 +93,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button slipDown = findViewById(R.id.slipDown);
+        Button slipDown = findViewById(R.id.fireController);
         slipDown.setOnClickListener(v -> {
-            if (connectionManager.isConnected()) {
-                for (int i = 0; i < 50; i++) {
-                    connectionManager.mouse.sendMouse((byte) 0x00, (byte) 0x02);
-                }
+            connectionManager.mouse.canFire = !connectionManager.mouse.canFire;
+            if (connectionManager.mouse.canFire) {
+                Toast.makeText(this, "开火", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "停火", Toast.LENGTH_SHORT).show();
             }
         });
 

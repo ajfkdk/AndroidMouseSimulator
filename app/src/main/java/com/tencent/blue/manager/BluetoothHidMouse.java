@@ -13,6 +13,8 @@ public class BluetoothHidMouse {
 
     private final BluetoothDevice remoteComputer;
 
+    public boolean canFire = true;
+
     public  BluetoothHidMouse(BluetoothHidDevice service, BluetoothDevice hostDevice) {
         this.myHidDevice = service;
         this.remoteComputer = hostDevice;
@@ -55,6 +57,11 @@ public class BluetoothHidMouse {
             Log.e(TAG, "sendMouse failed,  hid device is not connected!");
             return;
         }
+
+        if (!canFire){
+            return;
+        }
+
 
         byte[] bytes = new byte[5];
         //bytes[0]字节：bit0: 1表示左键按下 0表示左键抬起 | bit1: 1表示右键按下 0表示右键抬起 | bit2: 1表示中键按下 | bit7～3：补充的常数，无意义，这里为0即可

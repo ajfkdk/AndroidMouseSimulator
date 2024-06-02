@@ -44,11 +44,11 @@
             android:text="下" />
 
         <Button
-            android:id="@+id/slipDown"
+            android:id="@+id/fireController"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
-            android:text="下滑" />
+            android:text="开火" />
 
         <Button
             android:id="@+id/showPaired"

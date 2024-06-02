@@ -44,6 +44,8 @@ public class UdpServer {
     private int totalChunks;
     private int receivedChunks;
 
+    BitmapFactory.Options bitFactoryoptions;
+
     public UdpServer() {
         this.executorService = Executors.newSingleThreadExecutor();
     }
@@ -52,6 +54,9 @@ public class UdpServer {
         udpServerTask = executorService.submit(this::runServer);
         Log.d(TAG, "start: UDP server started");
         this.connectionManager = connectionManager;
+        bitFactoryoptions = new BitmapFactory.Options();//用于设置图片解码的参数
+        bitFactoryoptions.inPreferredConfig = Bitmap.Config.RGB_565; // 使用RGB_565配置作为备用
+
     }
 
     public void stop() {
@@ -119,8 +124,10 @@ public class UdpServer {
                         byte[] completeImageData = new byte[totalChunks * (BUFFER_SIZE - HEADER_SIZE)];
                         int offset = 0;
                         for (byte[] chunk : imageChunks) {
-                            System.arraycopy(chunk, 0, completeImageData, offset, chunk.length);
-                            offset += chunk.length;
+                            if (chunk != null) {
+                                System.arraycopy(chunk, 0, completeImageData, offset, chunk.length);
+                                offset += chunk.length;
+                            }
                         }
                         onImageReceived(completeImageData); // 调用处理完整图像数据的方法
                         receivedChunks = 0; // 重置计数器
@@ -134,13 +141,14 @@ public class UdpServer {
             Log.e(TAG, "Error parsing binary message", e);
         }
     }
+
     private void moveTo(int targetX, int targetY) {
         if (targetX < 0 || targetX > SCREEN_WIDTH || targetY < 0 || targetY > SCREEN_HEIGHT) {
             Log.e(TAG, "Target position out of bounds");
             return;
         }
 
-        if (!connectionManager.isConnected()){
+        if (!connectionManager.isConnected()) {
             Log.d(TAG, "moveTo: 设备未连接");
             return;
         }
@@ -177,12 +185,11 @@ public class UdpServer {
         // 将图像数据传递给UI线程进行显示
         if (imageReceiver != null) {
             // 尝试转换字节数组为 Bitmap
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+            Bitmap bitmap = null;
+            bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length, bitFactoryoptions);
             if (bitmap != null) {
-                Log.d(TAG, "onImageReceived: Bitmap successfully decoded.");
                 imageReceiver.onImageReceived(bitmap);
             } else {
-                Log.e(TAG, "onImageReceived: Failed to decode byte array to bitmap.");
             }
         }
     }
