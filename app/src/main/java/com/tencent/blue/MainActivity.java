@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         Button slipLeft = findViewById(R.id.slipLeft);
         slipLeft.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                connectionManager.mouse.sendMouse((byte) 0x14, (byte) 0x00);
+                connectionManager.mouse.sendMouse((byte) 100, (byte) 0);
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
@@ -74,7 +74,8 @@ public class MainActivity extends AppCompatActivity {
         Button simpleChick = findViewById(R.id.simpleChick);
         simpleChick.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                connectionManager.mouse.sendLeftClick(true);
+                connectionManager.mouse.sendMouse((byte) 0, (byte) 100);
+
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }

@@ -35,14 +35,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
-            android:text="左滑" />
+            android:text="右" />
 
         <Button
             android:id="@+id/simpleChick"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
-            android:text="单击" />
+            android:text="下" />
 
         <Button
             android:id="@+id/slipDown"

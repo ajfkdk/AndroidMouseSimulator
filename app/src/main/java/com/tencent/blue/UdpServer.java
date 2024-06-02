@@ -82,7 +82,7 @@ public class UdpServer {
         }
     }
     private void moveTo(int targetX, int targetY) {
-        if (targetX < 0 || targetX >= SCREEN_WIDTH || targetY < 0 || targetY >= SCREEN_HEIGHT) {
+        if (targetX < 0 || targetX > SCREEN_WIDTH || targetY < 0 || targetY > SCREEN_HEIGHT) {
             Log.e(TAG, "Target position out of bounds");
             return;
         }
