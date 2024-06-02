@@ -240,7 +240,7 @@ public class NewBlueConnectManager {
                         Log.d(TAG, "设备已连接: " + device.getName());
                         HostDevice hostDevice = new HostDevice(device.getAddress(), device.getName(), System.currentTimeMillis());
                         devices.addDevice(hostDevice);
-                        ((MainActivity) mActivity).updateBluetoothStatus();
+//                        ((MainActivity) mActivity).updateBluetoothStatus();
                         remoteComputer = device;
                         mouse = new BluetoothHidMouse(myHidDevice, remoteComputer);
                         Toast.makeText(mActivity, "设备已连接", Toast.LENGTH_SHORT).show();

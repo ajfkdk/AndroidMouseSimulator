@@ -1,6 +1,7 @@
 package com.tencent.blue;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.tencent.blue.manager.NewBlueConnectManager;
 
@@ -87,6 +88,7 @@ public class UdpServer {
                     moveTo(x, y);
                     break;
                 case 0x02: // 其他类型的消息处理
+                    Log.d(TAG, "onMessageReceived: Image data received");
                     byte[] imageData = new byte[message.length - 1];
                     System.arraycopy(message, 1, imageData, 0, imageData.length);
                     onImageReceived(imageData);
@@ -104,6 +106,10 @@ public class UdpServer {
             return;
         }
 
+        if (!connectionManager.isConnected()){
+            Log.d(TAG, "moveTo: 设备未连接");
+            return;
+        }
 //        初始化鼠标位置
         currentX = SCREEN_CENTER_X;
         currentY = SCREEN_CENTER_Y;

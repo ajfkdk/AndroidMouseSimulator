@@ -41,6 +41,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        // 初始化蓝牙连接管理器
+        connectionManager = new NewBlueConnectManager(this, new DeviceStorage(this));
+        // 连接设备
+        connectionManager.init();
+
+
         // 初始化RecyclerView和适配器
         RecyclerView imageRecyclerView = findViewById(R.id.device_list_recycler_view);
         imageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -54,10 +61,6 @@ public class MainActivity extends AppCompatActivity {
         }));
         udpServer.start(connectionManager);
 
-        // 初始化蓝牙连接管理器
-        connectionManager = new NewBlueConnectManager(this, new DeviceStorage(this));
-        // 连接设备
-        connectionManager.init();
 
         // 按钮事件处理
         setupButtonListeners();
