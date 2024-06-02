@@ -143,6 +143,15 @@ public class NewBlueConnectManager {
         registerBluetoothHid();
     }
 
+    public void defaultConnect(){
+        HostDevice device = devices.getDevice(0);
+        if (device != null) {
+            activeConnect(device.getAddress());
+        }else{
+            Toast.makeText(mActivity, "没有已配对设备", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void activeConnect(String address) {
         remoteComputer = bluetoothAdapter.getRemoteDevice(address);
         if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {

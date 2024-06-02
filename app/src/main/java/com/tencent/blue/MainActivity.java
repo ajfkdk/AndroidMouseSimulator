@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
@@ -32,32 +34,33 @@ public class MainActivity extends AppCompatActivity {
     // 设备列表适配器
     DeviceListAdapter deviceListAdapter;
 
+    // 图片适配器
+    private ImageAdapter imageAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // 初始化RecyclerView和适配器
+        RecyclerView imageRecyclerView = findViewById(R.id.device_list_recycler_view);
+        imageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        imageAdapter = new ImageAdapter();
+        imageRecyclerView.setAdapter(imageAdapter);
+
+        // 启动UDP服务器
+        udpServer = new UdpServer();
+        udpServer.setImageReceiver(imageData -> runOnUiThread(() -> {
+            imageAdapter.addImageData(imageData);
+        }));
+        udpServer.start(connectionManager);
 
         // 初始化蓝牙连接管理器
         connectionManager = new NewBlueConnectManager(this, new DeviceStorage(this));
         // 连接设备
         connectionManager.init();
 
-
-        // 初始化RecyclerView和适配器
-        RecyclerView deviceListRecyclerView = findViewById(R.id.device_list_recycler_view);
-        deviceListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        deviceListAdapter = new DeviceListAdapter(new ArrayList<>(), connectionManager);
-        deviceListRecyclerView.setAdapter(deviceListAdapter);
-        // 读取存储的设备数据并更新RecyclerView
-        updateDeviceList();
-
         // 按钮事件处理
         setupButtonListeners();
-
-        // 启动UDP服务器
-        udpServer = new UdpServer();
-        udpServer.start(connectionManager);
-
 
     }
 
@@ -99,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button activeBlue = findViewById(R.id.activeBlue);
         activeBlue.setOnClickListener(v -> {
-
+            connectionManager.defaultConnect();
         });
 
         Button passitiveScan = findViewById(R.id.passitiveScan);
@@ -119,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Toast.makeText(this, "断开连接", Toast.LENGTH_SHORT).show();
-//        connectionManager.disconnect();
+        udpServer.stop(); // 停止UDP服务器
     }
 
     public void updateBluetoothStatus() {
