@@ -95,6 +95,11 @@ public class MainActivity extends AppCompatActivity {
 
         Button slipDown = findViewById(R.id.fireController);
         slipDown.setOnClickListener(v -> {
+            if (!connectionManager.isConnected()) {
+
+                Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
+                return;
+            }
             connectionManager.mouse.canFire = !connectionManager.mouse.canFire;
             if (connectionManager.mouse.canFire) {
                 Toast.makeText(this, "开火", Toast.LENGTH_SHORT).show();

@@ -134,6 +134,9 @@ public class UdpServer {
                         imageChunks = null; // 清空数据缓冲区
                     }
                     break;
+                case 0x03: // 鼠标左键点击
+                    Log.d(TAG, "onMessageReceived: 鼠标左键点击");
+                    connectionManager.mouse.sendMouse((byte) 0x00, (byte) 0x01);
                 default:
                     Log.e(TAG, "Unknown message type: " + messageType);
             }
@@ -173,11 +176,11 @@ public class UdpServer {
             currentY += dy;
 
             // 避免发送过于频繁
-            try {
-                Thread.sleep(5); // 可以根据需要调整延迟时间
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+////                Thread.sleep(5); // 可以根据需要调整延迟时间
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
