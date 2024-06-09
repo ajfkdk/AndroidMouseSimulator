@@ -24,6 +24,8 @@ public class UdpServer {
     private static final int SCREEN_WIDTH = 1920;
     private static final int SCREEN_HEIGHT = 1080;
 
+    private static final int maxMoveStep = 127;
+
     // 当前鼠标位置
     private int currentX = 960;
     private int currentY = 540;
@@ -34,7 +36,6 @@ public class UdpServer {
 
     private NewBlueConnectManager connectionManager;
 
-    private ImageReceiver imageReceiver;
 
     private static final int BUFFER_SIZE = 1400; // 每个数据块的大小
 
@@ -45,6 +46,9 @@ public class UdpServer {
     private int receivedChunks;
 
     BitmapFactory.Options bitFactoryoptions;
+
+    // 压枪力度
+    private int forceValue = 3;
 
     public UdpServer() {
         this.executorService = Executors.newSingleThreadExecutor();
@@ -129,16 +133,25 @@ public class UdpServer {
                                 offset += chunk.length;
                             }
                         }
-                        onImageReceived(completeImageData); // 调用处理完整图像数据的方法
                         receivedChunks = 0; // 重置计数器
                         imageChunks = null; // 清空数据缓冲区
                     }
                     break;
                 case 0x03: // 鼠标左键点击
                     Log.d(TAG, "onMessageReceived: 鼠标左键点击");
-                    connectionManager.mouse.sendMouse((byte) 0x00, (byte) 0x01);
+//                    把forceValue作为下压力度，转为byte类型然后发送
+                    if (forceValue>127) {
+                        forceValue = 127;
+                    }
+                    connectionManager.mouse.sendMouse((byte) 0x00, (byte) forceValue);
+                case 0x04: // 新鼠标压枪
+                    int px = byteBuffer.getInt();
+                    int py = byteBuffer.getInt();
+                    moveTo(px, py);
+                    Log.d(TAG, "onMessageReceived: 新鼠标压枪");
                 default:
                     Log.e(TAG, "Unknown message type: " + messageType);
+
             }
         } catch (Exception e) {
             Log.e(TAG, "Error parsing binary message", e);
@@ -146,7 +159,7 @@ public class UdpServer {
     }
 
     private void moveTo(int targetX, int targetY) {
-        if (targetX < 0 || targetX > SCREEN_WIDTH || targetY < 0 || targetY > SCREEN_HEIGHT) {
+        if (targetX < -maxMoveStep || targetX > maxMoveStep || targetY < -maxMoveStep || targetY > maxMoveStep) {
             Log.e(TAG, "Target position out of bounds");
             return;
         }
@@ -155,49 +168,16 @@ public class UdpServer {
             Log.d(TAG, "moveTo: 设备未连接");
             return;
         }
+        connectionManager.mouse.sendMouse((byte) targetX, (byte) targetY);
 //        初始化鼠标位置
-        currentX = SCREEN_CENTER_X;
-        currentY = SCREEN_CENTER_Y;
+    }
 
-        while (currentX != targetX || currentY != targetY) {
-            int dx = targetX - currentX;
-            int dy = targetY - currentY;
-
-            // 限制dx和dy在[-127, 127]范围内
-            if (dx > 127) dx = 127;
-            if (dx < -127) dx = -127;
-            if (dy > 127) dy = 127;
-            if (dy < -127) dy = -127;
-
-            connectionManager.mouse.sendMouse((byte) dx, (byte) dy);
-
-            // 更新当前鼠标位置
-            currentX += dx;
-            currentY += dy;
-
-            // 避免发送过于频繁
-//            try {
-////                Thread.sleep(5); // 可以根据需要调整延迟时间
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+    public void setFocreValue(int forceValue) {
+        if (forceValue < 0 || forceValue > 10) {
+            Log.e(TAG, "Invalid force value: " + forceValue);
+            return;
         }
+        this.forceValue = forceValue;
     }
 
-    private void onImageReceived(byte[] imageData) {
-        // 将图像数据传递给UI线程进行显示
-        if (imageReceiver != null) {
-            // 尝试转换字节数组为 Bitmap
-            Bitmap bitmap = null;
-            bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length, bitFactoryoptions);
-            if (bitmap != null) {
-                imageReceiver.onImageReceived(bitmap);
-            } else {
-            }
-        }
-    }
-
-    public void setImageReceiver(ImageReceiver imageReceiver) {
-        this.imageReceiver = imageReceiver;
-    }
 }

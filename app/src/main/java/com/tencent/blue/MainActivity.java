@@ -10,8 +10,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -36,13 +38,15 @@ public class MainActivity extends AppCompatActivity {
     // 设备列表适配器
     DeviceListAdapter deviceListAdapter;
 
+    TextView forceValueTextView;
+
     // 添加用于显示视频流的 ImageView
-    private ImageView videoStreamView;
+    private int forceValue = 3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // 初始化蓝牙连接管理器
         connectionManager = new NewBlueConnectManager(this, new DeviceStorage(this));
@@ -51,20 +55,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         // 初始化 ImageView
-        videoStreamView = findViewById(R.id.video_stream_view);
         // 初始化RecyclerView和适配器
 
         // 启动UDP服务器
         // 启动UDP服务器
         udpServer = new UdpServer();
-        udpServer.setImageReceiver(imageData -> runOnUiThread(() -> {
-            // 显示接收到的图像数据
-            if (imageData != null) {
-                videoStreamView.setImageBitmap(imageData);
-            } else {
-                Log.e("MainActivity", "Failed to decode image data.");
-            }
-        }));
         udpServer.start(connectionManager);
 
 
@@ -74,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupButtonListeners() {
+
         Button slipLeft = findViewById(R.id.slipLeft);
         slipLeft.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
@@ -122,6 +118,39 @@ public class MainActivity extends AppCompatActivity {
         passitiveScan.setOnClickListener(v -> {
             connectionManager.passiveScan();
         });
+
+        //压枪力度的控制
+        forceValueTextView = findViewById(R.id.force_value);
+        Button decreaseForceButton = findViewById(R.id.decrease_force);
+        Button increaseForceButton = findViewById(R.id.increase_force);
+
+        decreaseForceButton.setOnClickListener(v -> {
+            if (forceValue > 0) {
+                forceValue--;
+                updateForceValue();
+            }
+        });
+
+        increaseForceButton.setOnClickListener(v -> {
+            if (forceValue < 10) { // assuming 10 is the max value
+                forceValue++;
+                updateForceValue();
+            }
+        });
+    }
+
+    private void updateForceValue() {
+        if (forceValue>127) {
+            forceValue = 127;
+            Toast.makeText(this, "力度已达最大值", Toast.LENGTH_SHORT).show();
+        } else if (forceValue < -127) {
+            forceValue = -127;
+            Toast.makeText(this, "力度已达最小值", Toast.LENGTH_SHORT).show();
+        }
+        udpServer.setFocreValue(forceValue);
+        forceValueTextView.setText(String.valueOf(forceValue));
+
+        Log.d("MainActivity", "Force value: " + forceValue);
     }
 
     private void updateDeviceList() {

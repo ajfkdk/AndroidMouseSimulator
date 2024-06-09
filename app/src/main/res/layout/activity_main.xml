@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:rowCount="2"
+        android:rowCount="3"
         android:columnCount="4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -70,7 +70,7 @@
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:text="扫描" />
-<!--        接收服务的功能     -->
+
         <Button
             android:id="@+id/startService"
             android:layout_width="0dp"
@@ -84,5 +84,29 @@
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:text="停服" />
+
+        <!-- 力度调整按钮组 -->
+        <Button
+            android:id="@+id/decrease_force"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="《" />
+
+        <TextView
+            android:id="@+id/force_value"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:text="3"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/increase_force"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="》" />
     </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
