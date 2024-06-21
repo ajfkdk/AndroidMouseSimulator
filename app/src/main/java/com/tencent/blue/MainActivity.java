@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button slipDown = findViewById(R.id.fireController);
+        TextView slipDown = findViewById(R.id.fireController);
         slipDown.setOnClickListener(v -> {
             if (!connectionManager.isConnected()) {
 
@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity {
             }
             connectionManager.mouse.canFire = !connectionManager.mouse.canFire;
             if (connectionManager.mouse.canFire) {
-                Toast.makeText(this, "开火", Toast.LENGTH_SHORT).show();
+                slipDown.setText("开火");
             } else {
-                Toast.makeText(this, "停火", Toast.LENGTH_SHORT).show();
+                slipDown.setText("停火");
             }
         });
 

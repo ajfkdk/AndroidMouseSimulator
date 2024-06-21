@@ -95,7 +95,7 @@ public class UdpServer {
 
     private void onMessageReceived(byte[] message) {
         try {
-            ByteBuffer byteBuffer = ByteBuffer.wrap(message).order(ByteOrder.BIG_ENDIAN);
+              ByteBuffer byteBuffer = ByteBuffer.wrap(message).order(ByteOrder.BIG_ENDIAN);
             byte messageType = byteBuffer.get(); // 读取消息头
             switch (messageType) {
                 case 0x01: // 鼠标移动
