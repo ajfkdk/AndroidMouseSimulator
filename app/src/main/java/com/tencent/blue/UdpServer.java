@@ -3,7 +3,6 @@ package com.tencent.blue;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.tencent.blue.manager.NewBlueConnectManager;
 
@@ -141,11 +140,9 @@ public class UdpServer {
                     Log.d(TAG, "onMessageReceived: 鼠标左键点击");
                     connectionManager.mouse.sendLeftClick(true);
                     break;
-                case 0x04: // 新鼠标压枪
-                    int px = byteBuffer.getInt();
-                    int py = byteBuffer.getInt();
-                    moveTo(px, py);
+                case 0x04: // 鼠标右键点击
                     Log.d(TAG, "onMessageReceived: 新鼠标压枪");
+                    connectionManager.mouse.sendRightClick(true);
                 default:
                     Log.e(TAG, "Unknown message type: " + messageType);
 
@@ -165,7 +162,7 @@ public class UdpServer {
             Log.d(TAG, "moveTo: 设备未连接");
             return;
         }
-        connectionManager.mouse.sendMouse((byte) targetX, (byte) targetY);
+        connectionManager.mouse.move((byte) targetX, (byte) targetY);
 //        初始化鼠标位置
     }
 

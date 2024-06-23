@@ -2,29 +2,20 @@ package com.tencent.blue;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.tencent.blue.manager.BluetoothConnectionManager;
-import com.tencent.blue.manager.BluetoothHidMouse;
 import com.tencent.blue.manager.NewBlueConnectManager;
 import com.tencent.blue.storage.DeviceStorage;
 import com.tencent.blue.storage.HostDevice;
 import com.tencent.blue.viewclass.DeviceListAdapter;
-import com.tencent.blue.viewclass.SettingsActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         Button slipLeft = findViewById(R.id.slipLeft);
         slipLeft.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                connectionManager.mouse.sendMouse((byte) 100, (byte) 0);
+                connectionManager.mouse.move((byte) 100, (byte) 0);
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
             }
@@ -82,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         Button simpleChick = findViewById(R.id.simpleChick);
         simpleChick.setOnClickListener(v -> {
             if (connectionManager.isConnected()) {
-                connectionManager.mouse.sendMouse((byte) 0, (byte) 100);
+                connectionManager.mouse.move((byte) 0, (byte) 100);
 
             } else {
                 Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
