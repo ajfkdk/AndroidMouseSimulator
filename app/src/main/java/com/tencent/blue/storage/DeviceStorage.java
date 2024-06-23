@@ -77,7 +77,10 @@ public class DeviceStorage {
      * @return 已知设备
      */
     public HostDevice getDevice(int i) {
-        return devices.get(i);  // 返回指定索引的设备
+        if (i < devices.size()){
+            return devices.get(i);  // 返回指定索引处的设备
+        }
+        return null;  // 如果索引超出范围则返回null
     }
 
     /**

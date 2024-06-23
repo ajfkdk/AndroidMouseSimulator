@@ -89,6 +89,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button firecontrollerSmall = findViewById(R.id.fireControllersmall);
+        firecontrollerSmall.setOnClickListener(v -> {
+            if (connectionManager.isConnected()) {
+                connectionManager.mouse.sendLeftClick(true);
+            } else {
+                Toast.makeText(this, "设备未连接", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         TextView slipDown = findViewById(R.id.fireController);
         slipDown.setOnClickListener(v -> {
             if (!connectionManager.isConnected()) {

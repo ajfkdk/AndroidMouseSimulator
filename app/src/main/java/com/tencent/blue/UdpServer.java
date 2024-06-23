@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 public class UdpServer {
 
     private static final String TAG = "UdpServer";
-    private static final int SERVER_PORT = 12345; // Ensure this matches the Python client port
+    private static final int SERVER_PORT = 21115; // Ensure this matches the Python client port
     private final ExecutorService executorService;
     private Future<?> udpServerTask;
     private static final int SCREEN_WIDTH = 1920;
@@ -139,11 +139,8 @@ public class UdpServer {
                     break;
                 case 0x03: // 鼠标左键点击
                     Log.d(TAG, "onMessageReceived: 鼠标左键点击");
-//                    把forceValue作为下压力度，转为byte类型然后发送
-                    if (forceValue>127) {
-                        forceValue = 127;
-                    }
-                    connectionManager.mouse.sendMouse((byte) 0x00, (byte) forceValue);
+                    connectionManager.mouse.sendLeftClick(true);
+                    break;
                 case 0x04: // 新鼠标压枪
                     int px = byteBuffer.getInt();
                     int py = byteBuffer.getInt();
