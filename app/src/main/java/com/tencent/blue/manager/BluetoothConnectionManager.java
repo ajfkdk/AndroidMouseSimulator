@@ -237,8 +237,6 @@ public class BluetoothConnectionManager {
                         Log.d(TAG, "设备已连接: " + device.getName());
                         HostDevice hostDevice = new HostDevice(device.getName(), device.getAddress());
                         devices.addDevice(hostDevice);
-                        //mActivity强转为MainActivity，调用MainActivity的updateBluetoothStatus方法
-                        ((MainActivity) mActivity).updateBluetoothStatus();
                         break;
                     case BluetoothProfile.STATE_DISCONNECTING:
                         Log.d(TAG, "设备正在断开连接: " + device.getName());

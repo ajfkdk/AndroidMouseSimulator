@@ -17,21 +17,13 @@ import java.util.concurrent.Future;
 public class UdpServer {
 
     private static final String TAG = "UdpServer";
-    private static final int SERVER_PORT = 21115; // Ensure this matches the Python client port
+    public static final int SERVER_PORT = 21115; // Ensure this matches the Python client port
     private final ExecutorService executorService;
     private Future<?> udpServerTask;
-    private static final int SCREEN_WIDTH = 1920;
-    private static final int SCREEN_HEIGHT = 1080;
+
 
     private static final int maxMoveStep = 127;
 
-    // 当前鼠标位置
-    private int currentX = 960;
-    private int currentY = 540;
-
-    // 屏幕中心位置
-    private static final int SCREEN_CENTER_X = SCREEN_WIDTH / 2;
-    private static final int SCREEN_CENTER_Y = SCREEN_HEIGHT / 2;
 
     private NewBlueConnectManager connectionManager;
 
@@ -46,8 +38,6 @@ public class UdpServer {
 
     BitmapFactory.Options bitFactoryoptions;
 
-    // 压枪力度
-    private int forceValue = 3;
 
     public UdpServer() {
         this.executorService = Executors.newSingleThreadExecutor();
@@ -166,12 +156,6 @@ public class UdpServer {
 //        初始化鼠标位置
     }
 
-    public void setFocreValue(int forceValue) {
-        if (forceValue < 0 || forceValue > 10) {
-            Log.e(TAG, "Invalid force value: " + forceValue);
-            return;
-        }
-        this.forceValue = forceValue;
-    }
+
 
 }
