@@ -107,7 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:backgroundTint="#FFFFFF"
-                    android:text="被动连接"
+                    android:text="@string/scan"
                     android:textColor="#000000"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -133,7 +133,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:backgroundTint="#FFFFFF"
-                    android:text="主动连接"
+                    android:text="@string/connect"
                     android:textColor="#000000"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
